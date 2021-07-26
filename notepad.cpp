@@ -69,6 +69,7 @@ void Notepad::newDocument()
     ui->textEdit->setText(QString());
 }
 
+/*
 void Notepad::open()
 {
     QString fileName=QFileDialog::getOpenFileName(this,"Open the file");
@@ -81,7 +82,25 @@ void Notepad::open()
     setWindowTitle(fileName);
     QTextStream out(&file);
     QString text=ui->textEdit->toPlainText();
-    out << text;
+    out << text;//输出到文件，什么鬼？怎么会写成这样
+    file.close();
+}
+*/
+void Notepad::open()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, "Open the file");
+    if (fileName.isEmpty())
+        return;
+    QFile file(fileName);
+    currentFile = fileName;
+    if (!file.open(QIODevice::ReadOnly | QFile::Text)) {
+        QMessageBox::warning(this, "Warning", "Cannot open file: " + file.errorString());
+        return;
+    }
+    setWindowTitle(fileName);
+    QTextStream in(&file);
+    QString text = in.readAll();
+    ui->textEdit->setText(text);
     file.close();
 }
 
