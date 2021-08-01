@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>Block.qml</file>
+        <file>BlockEmitter.qml</file>
+        <file>Button.qml</file>
+    </qresource>
+</RCC>
