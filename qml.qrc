@@ -4,5 +4,6 @@
         <file>Block.qml</file>
         <file>BlockEmitter.qml</file>
         <file>Button.qml</file>
+        <file>GameArea.qml</file>
     </qresource>
 </RCC>
