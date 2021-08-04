@@ -5,5 +5,6 @@
         <file>BlockEmitter.qml</file>
         <file>Button.qml</file>
         <file>GameArea.qml</file>
+        <file>LogoAnimation.qml</file>
     </qresource>
 </RCC>
