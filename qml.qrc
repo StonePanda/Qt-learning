@@ -6,5 +6,7 @@
         <file>Button.qml</file>
         <file>GameArea.qml</file>
         <file>LogoAnimation.qml</file>
+        <file>MenuEmitter.qml</file>
+        <file>PaintEmitter.qml</file>
     </qresource>
 </RCC>
