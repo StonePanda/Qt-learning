@@ -8,5 +8,6 @@
         <file>LogoAnimation.qml</file>
         <file>MenuEmitter.qml</file>
         <file>PaintEmitter.qml</file>
+        <file>PrimaryPack.qml</file>
     </qresource>
 </RCC>
