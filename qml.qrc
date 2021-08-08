@@ -9,5 +9,6 @@
         <file>MenuEmitter.qml</file>
         <file>PaintEmitter.qml</file>
         <file>PrimaryPack.qml</file>
+        <file>PuzzleBlock.qml</file>
     </qresource>
 </RCC>
