@@ -10,5 +10,13 @@
         <file>PaintEmitter.qml</file>
         <file>PrimaryPack.qml</file>
         <file>PuzzleBlock.qml</file>
+        <file>SamegameText.qml</file>
+        <file>Settings.qml</file>
+        <file>SimpleBlock.qml</file>
+        <file>SmokeText.qml</file>
+        <file>levels/TemplateBase.qml</file>
+        <file>levels/level0.qml</file>
+        <file>levels/level1.qml</file>
+        <file>levels/level2.qml</file>
     </qresource>
 </RCC>
