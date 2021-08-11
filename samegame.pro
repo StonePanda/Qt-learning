@@ -1,4 +1,5 @@
-QT += quick
+TEMPLATE=app
+QT +=qml quick sql
 
 CONFIG += c++11
 
@@ -9,7 +10,8 @@ CONFIG += c++11
 SOURCES += \
         main.cpp
 
-RESOURCES += qml.qrc
+RESOURCES += \ # qml.qrc #所有资源 在IDE里更改后这里会自动更改qrc文件的名字
+    samegame.qrc
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
@@ -18,6 +20,7 @@ QML_IMPORT_PATH =
 QML_DESIGNER_IMPORT_PATH =
 
 # Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
+#原路径
+qnx: target.path =/tmp/$${TARGET}/bin #$$[QT_INSTALL_EXAMPLES]/demos/samegame 教程里的路径
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target

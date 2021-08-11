@@ -55,7 +55,8 @@ Item {
     }
 
     MouseArea{
-        anchors.fill: parent; onClicked:{
+        anchors.fill: parent;
+        onClicked:{
             if(puzzleTextBubble.opacity==1){
                 puzzleTextBubble.opacity=0
                 Logic.finishLoadingMap()
@@ -106,6 +107,7 @@ Item {
             font.bold: true
             wrapMode: Text.WordWrap
         }
+        // @disable-check M16
         onModeChanged:{
             p1WonImg.opacity=0;
             p2WonImg.opacity=0;
@@ -120,6 +122,7 @@ Item {
             source:"gfx/icon-fail.png"
             system:particleSystem
         }
+        // @disable-check M16
         onSwapPlayers:{
             smokeParticle.color="yellow"
             Logic.turnChange()
@@ -157,7 +160,7 @@ Item {
             playerNum:2
             opacity:p1WonImg.opacity+p2WonImg.opacity>0?0:1
         }
-
+        // @disable-check M16
         onGameOverChanged:{
             if(gameCanvas.mode=="multiplayer"){
                 if(gameCanvas.score>=gameCanvas.score2){
