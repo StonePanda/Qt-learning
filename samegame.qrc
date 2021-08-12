@@ -25,7 +25,7 @@
         <file>content/levels/level7.qml</file>
         <file>content/levels/level8.qml</file>
         <file>content/levels/level9.qml</file>
-        <file>content/qmldir.1</file>
+        <file>content/qmldir</file>
         <file>content/samegame.js</file>
         <file>samegame.qml</file>
         <file>samegame.qmlproject</file>

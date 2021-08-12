@@ -2,7 +2,7 @@ import QtQuick 2.0
 import QtQuick.Particles 2.0
 
 Item {
-    id: container
+    id: container //Positioned where the 48x48 S/G should be
     property alias running: mainAnim.running
     property ParticleSystem particleSystem
     property int dur: 500
@@ -10,116 +10,53 @@ Item {
     Image {
         id: s1
         source: "gfx/logo-s.png"
-        y:0
+        y: 0
     }
     Image {
         id: g1
         source: "gfx/logo-g.png"
-        y:-128
+        y: -128
     }
-    Column{
-        Repeater{
-            model:2
+    Column {
+        Repeater {
+            model: 2
             Item {
-                width:48
+                width: 48
                 height: 48
-                BlockEmitter{
-                    id:emitter
+                BlockEmitter {
+                    id: emitter
                     anchors.fill: parent
                     group: "red"
                     system: particleSystem
-                    Connections{
+                    Connections {
                         target: container
-                        onBoomTime: emitter.pulse(100)
+                        function onBoomTime(){ emitter.pulse(100);}
                     }
                 }
             }
         }
     }
-    SequentialAnimation{
-        id:mainAnim
+    SequentialAnimation {
+        id: mainAnim
         running: true
         loops: -1
-        PropertyAction{
-            target: g1
-            property: "y"
-            value: -128
+        PropertyAction { target: g1; property: "y"; value: -128}
+        PropertyAction { target: g1; property: "opacity"; value: 1}
+        PropertyAction { target: s1; property: "y"; value: 0}
+        PropertyAction { target: s1; property: "opacity"; value: 1}
+        NumberAnimation { target: g1; property: "y"; from: -96; to: -48; duration: dur}
+        ParallelAnimation {
+            NumberAnimation { target: g1; property: "y"; from: -48; to: 0; duration: dur}
+            NumberAnimation { target: s1; property: "y"; from: 0; to: 48; duration: dur }
         }
-        PropertyAction{
-            target: g1
-            property: "opacity"
-            value: 1
+        PauseAnimation { duration: dur }
+        ScriptAction { script: container.boomTime(); }
+        ParallelAnimation {
+            NumberAnimation { target: g1; property: "opacity"; to: 0; duration: dur }
+            NumberAnimation { target: s1; property: "opacity"; to: 0; duration: dur }
         }
-        PropertyAction{
-            target: s1
-            property: "y"
-            value: "0"
-        }
-        PropertyAction{
-            target: s1
-            property: "opacity"
-            value: 1
-        }
-        NumberAnimation{
-            target: g1
-            property: "y"
-            from:-96
-            to:-48
-            duration: dur
-        }
-        ParallelAnimation{
-            NumberAnimation{
-                target: g1
-                property: "y"
-                from:-48
-                to:0
-                duration: dur
-            }
-            NumberAnimation{
-                target: s1
-                property: "y"
-                from:0
-                to:48
-                duration: dur
-            }
-        }
-
-        PauseAnimation {
-            duration: dur
-        }
-        ScriptAction{
-            script: container.boomTime()
-        }
-        ParallelAnimation{
-            NumberAnimation{
-                target: g1
-                property: "opacity"
-                to:0
-                duration: dur
-            }
-            NumberAnimation{
-                target: s1
-                property: "y"
-                to:0
-                duration: dur
-            }
-        }
-        PropertyAction{
-            target: s1
-            property: "y"
-            value: -128
-        }
-        PropertyAction{
-            target: s1
-            property: "opacity"
-            value: 1
-        }
-        NumberAnimation{
-            target: "s1"
-            property: "y"
-            from:-96
-            to:0
-            duration: dur*2
-        }
+        PropertyAction { target: s1; property: "y"; value: -128}
+        PropertyAction { target: s1; property: "opacity"; value: 1}
+        NumberAnimation { target: s1; property: "y"; from: -96; to: 0; duration: dur * 2}
     }
 }
