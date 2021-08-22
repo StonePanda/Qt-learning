@@ -1,150 +1,162 @@
-/*This script file handles the game logic*/
+/* This script file handles the game logic */
 .pragma library
 .import QtQuick.LocalStorage 2.0 as Sql
 
-var maxColumn=10
-var maxRow=13
-var types=3
-var maxIndex=maxColumn*maxRow
-var board=new Array(maxIndex)
-var blockSrc="Block.qml"
-var gameDuration
-var component=Qt.createComponent(blockSrc)
-var gameCanvas
-var betweenTurns=false
+var maxColumn = 10;
+var maxRow = 13;
+var types = 3;
+var maxIndex = maxColumn*maxRow;
+var board = new Array(maxIndex);
+var blockSrc = "Block.qml";
+var gameDuration;
+var component = Qt.createComponent(blockSrc);
+var gameCanvas;
+var betweenTurns = false;
 
-var puzzleLevel=null
-var puzzlePath=""
+var puzzleLevel = null;
+var puzzlePath = "";
 
-var gameMode="arcade"
-var gameOver=false
+var gameMode = "arcade"; //Set in new game, then tweaks behaviour of other functions
+var gameOver = false;
 
-function changeBlock(src){
-    blockSrc=src
-    component=Qt.createComponent(blockSrc)
+function changeBlock(src)
+{
+    blockSrc = src;
+    component = Qt.createComponent(blockSrc);
 }
 
-function index(column,row){
-    return column+row*maxColumn
+// Index function used instead of a 2D array
+function index(column, row)
+{
+    return column + row * maxColumn;
 }
 
-function timeStr(msecs){
-    var secs=Math.floor(msecs/1000)
-    var m=Math.floor(secs/60)
-    var ret=""+m+"m "+(secs%60)+"s"
-    return ret
+function timeStr(msecs)
+{
+    var secs = Math.floor(msecs/1000);
+    var m = Math.floor(secs/60);
+    var ret = "" + m + "m " + (secs%60) + "s";
+    return ret;
 }
 
-function cleanUp(){
-    if(gameCanvas==undefined)
-        return
-    for(var i=0;i<maxIndex;i++){
-        if(board[i]!=null)
-            board[i].destroy()
-        board[i]=null
+function cleanUp()
+{
+    if (gameCanvas == undefined)
+        return;
+    // Delete blocks from previous game
+    for (var i = 0; i < maxIndex; i++) {
+        if (board[i] != null)
+            board[i].destroy();
+        board[i] = null;
     }
-    if(puzzleLevel!=null){
-        puzzleLevel.destroy()
-        puzzleLevel=null
+    if (puzzleLevel != null){
+        puzzleLevel.destroy();
+        puzzleLevel = null;
     }
-    gameCanvas.mode=""
+    gameCanvas.mode = ""
 }
 
-function startNewGame(gc,mode,map){
-    gameCanvas=gc
-    if(mode==undefined)
-        gameMode="arcade"
+function startNewGame(gc, mode, map)
+{
+    gameCanvas = gc;
+    if (mode == undefined)
+        gameMode = "arcade";
     else
-        gameMode=mode
-    gameOver=false
+        gameMode = mode;
+    gameOver = false;
 
-    cleanUp()
+    cleanUp();
 
-    gc.gameOver=false
-    gc.mode=gameMode
-    //Calculate board size
-    maxColumn=Math.floor(gameCanvas.width/gameCanvas.blockSize)
-    maxRow=Math.floor(gameCanvas.height/gameCanvas.blockSize)
-    maxIndex=maxRow*maxColumn
-    if(gameMode=="arcade")
-        getHighScore()
+    gc.gameOver = false;
+    gc.mode = gameMode;
+    // Calculate board size
+    maxColumn = Math.floor(gameCanvas.width/gameCanvas.blockSize);
+    maxRow = Math.floor(gameCanvas.height/gameCanvas.blockSize);
+    maxIndex = maxRow * maxColumn;
+    if (gameMode == "arcade") //Needs to be after board sizing
+        getHighScore();
 
-    board=new Array(maxIndex)
-    gameCanvas.score=0
-    gameCanvas.score2=0
-    gameCanvas.moves=0
-    gameCanvas.curTurn=1
-    if(gameMode=="puzzle")
-        loadMap(map)
-    else
-        for(var column=maxColumn-1;column>=0;column--)
-            for(var row=maxRow-1;row>=0;row--)
-                createBlock(column,row)
-    if(gameMode=="puzzle")
-        getLevelHistory()
-    gameDuration=new Date()
+    // Initialize Board
+    board = new Array(maxIndex);
+    gameCanvas.score = 0;
+    gameCanvas.score2 = 0;
+    gameCanvas.moves = 0;
+    gameCanvas.curTurn = 1;
+    if (gameMode == "puzzle")
+        loadMap(map);
+    else//Note that we load them in reverse order for correct visual stacking
+        for (var column = maxColumn - 1; column >= 0; column--)
+            for (var row = maxRow - 1; row >= 0; row--)
+                createBlock(column, row);
+    if (gameMode == "puzzle")
+        getLevelHistory();//Needs to be after map load
+    gameDuration = new Date();
 }
 
-var fillFound
-var floodBoard
+var fillFound;  // Set after a floodFill call to the number of blocks found
+var floodBoard; // Set to 1 if the floodFill reaches off that node
 
-function handleClick(x,y){
-    if(betweenTurns||gameOver||gameCanvas==undefined)
-        return
-    var column=Math.floor(x/gameCanvas.blockSize)
-    var row=Math.floor(y/gameCanvas.blockSize)
-    if(column>=maxColumn || column<0 ||row>=maxRow||row<0)
-        return
-    if(board[index(column,row)]==null)
-        return
-    floodFill(column,row,-1)
-    if(fillFound<=0)
-        return
-    if(gameMode=="multiplayer"&&gameCanvas.curTurn==2)
-        gameCanvas.score2+=(fillFound-1)*(fillFound-1)
+// NOTE: Be careful with vars named x,y, as the calling object's x,y are still in scope
+function handleClick(x,y)
+{
+    if (betweenTurns || gameOver || gameCanvas == undefined)
+        return;
+    var column = Math.floor(x/gameCanvas.blockSize);
+    var row = Math.floor(y/gameCanvas.blockSize);
+    if (column >= maxColumn || column < 0 || row >= maxRow || row < 0)
+        return;
+    if (board[index(column, row)] == null)
+        return;
+    // If it's a valid block, remove it and all connected (does nothing if it's not connected)
+    floodFill(column,row, -1);
+    if (fillFound <= 0)
+        return;
+    if (gameMode == "multiplayer" && gameCanvas.curTurn == 2)
+        gameCanvas.score2 += (fillFound - 1) * (fillFound - 1);
     else
-        gameCanvas.score+=(fillFound-1)*(fillFound-1)
-    if(gameMode=="multiplayer"&&gameCanvas.curTurn==2)
-        shuffleUp()
+        gameCanvas.score += (fillFound - 1) * (fillFound - 1);
+    if (gameMode == "multiplayer" && gameCanvas.curTurn == 2)
+        shuffleUp();
     else
-        shuffleDown()
-    gameCanvas.moves+=1
-    if(gameMode=="endless")
-        refill()
-    else if(gameMode!="multiplayer")
-        victoryCheck()
-    if(gameMode=="multiplayer"&&!gc.gameOver){
-        betweenTurns=true
-        gameCanvas.swapPlayers() //signal, animate and call turnChange() when ready
+        shuffleDown();
+    gameCanvas.moves += 1;
+    if (gameMode == "endless")
+        refill();
+    else if (gameMode != "multiplayer")
+        victoryCheck();
+    if (gameMode == "multiplayer" && !gc.gameOver){
+        betweenTurns = true;
+        gameCanvas.swapPlayers();//signal, animate and call turnChange() when ready
     }
 }
 
-function floodFill(column,row,type){
-    if(board[index(column,row)]==null)
-        return
-    var first=false
-    if(type==-1){
-        first=true
-        type=board[index(column,row)].type
+function floodFill(column,row,type)
+{
+    if (board[index(column, row)] == null)
+        return;
+    var first = false;
+    if (type == -1) {
+        first = true;
+        type = board[index(column,row)].type;
 
-        //Flood fill initialization
-        fillFound=0
-        floodBoard=new Array(maxIndex)
+        // Flood fill initialization
+        fillFound = 0;
+        floodBoard = new Array(maxIndex);
     }
-    if(column>=maxColumn || column<0 || row>=maxRow ||row<0)
-        return
-    if(floodBoard[index(column,row)]==1||(!first && type!=board[index(column,row)].type))
-        return
-    floodBoard[index(column,row)]=1
-    floodFill(column+1,row,type)
-    floodFill(column-1,row,type)
-    floodFill(column,row+1,type)
-    floodFill(column,row-1,type)
-    if(first==true && fillFound==0)
-        return //can't move single blocks
-    board[index(column,row)].dying=true
-    board[index(column,row)]=null
-    fillFound+=1
+    if (column >= maxColumn || column < 0 || row >= maxRow || row < 0)
+        return;
+    if (floodBoard[index(column, row)] == 1 || (!first && type != board[index(column, row)].type))
+        return;
+    floodBoard[index(column, row)] = 1;
+    floodFill(column + 1, row, type);
+    floodFill(column - 1, row, type);
+    floodFill(column, row + 1, type);
+    floodFill(column, row - 1, type);
+    if (first == true && fillFound == 0)
+        return; // Can't remove single blocks
+    board[index(column, row)].dying = true;
+    board[index(column, row)] = null;
+    fillFound += 1;
 }
 
 function shuffleDown()
